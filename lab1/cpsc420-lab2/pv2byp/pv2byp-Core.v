@@ -80,6 +80,14 @@ module parc_Core
   wire        branch_cond_neg_Xhl;
   wire [31:0] proc2cop_data_Whl;
 
+  // bypass 
+  wire byb_w_rt;
+  wire byb_w_rs;
+  wire byb_x_rt;
+  wire byb_x_rs;
+  wire byb_m_rt;
+  wire byb_m_rs;
+
   //----------------------------------------------------------------------
   // Pack Memory Request Messages
   //----------------------------------------------------------------------
@@ -148,6 +156,13 @@ module parc_Core
 
     // Controls Signals (ctrl->dpath)
 
+	.byb_w_rt 					(byb_w_rt),
+	.byb_w_rs					(byb_w_rs),
+	.byb_x_rt 					(byb_x_rt),
+	.byb_x_rs					(byb_x_rs),
+	.byb_m_rt 					(byb_m_rt),
+	.byb_m_rs					(byb_m_rs),
+	
     .pc_mux_sel_Phl         (pc_mux_sel_Phl),
     .op0_mux_sel_Dhl        (op0_mux_sel_Dhl),
     .op1_mux_sel_Dhl        (op1_mux_sel_Dhl),
@@ -204,6 +219,12 @@ module parc_Core
     .dmemresp_msg_data       (dmemresp_msg_data),
 
     // Controls Signals (ctrl->dpath)
+	.byb_w_rt 					(byb_w_rt),
+	.byb_w_rs					(byb_w_rs),
+	.byb_x_rt 					(byb_x_rt),
+	.byb_x_rs					(byb_x_rs),
+	.byb_m_rt 					(byb_m_rt),
+	.byb_m_rs					(byb_m_rs),
 
     .pc_mux_sel_Phl          (pc_mux_sel_Phl),
     .op0_mux_sel_Dhl         (op0_mux_sel_Dhl),
