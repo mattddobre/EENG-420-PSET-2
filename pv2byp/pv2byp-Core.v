@@ -80,6 +80,11 @@ module parc_Core
   wire        branch_cond_neg_Xhl;
   wire [31:0] proc2cop_data_Whl;
 
+  // Bypass wires
+
+  wire        rs_W_byp_Dhl;
+  wire        rt_W_byp_Dhl;
+
   //----------------------------------------------------------------------
   // Pack Memory Request Messages
   //----------------------------------------------------------------------
@@ -181,7 +186,12 @@ module parc_Core
 
     // CP0 Status
 
-    .cp0_status             (cp0_status)
+    .cp0_status             (cp0_status),
+
+    // Bypass Signals
+
+    .rs_W_byp_Dhl           (rs_W_byp_Dhl),
+    .rt_W_byp_Dhl           (rt_W_byp_Dhl)
   );
 
   //----------------------------------------------------------------------
@@ -234,7 +244,12 @@ module parc_Core
     .branch_cond_eq_Xhl      (branch_cond_eq_Xhl),
     .branch_cond_zero_Xhl    (branch_cond_zero_Xhl),
     .branch_cond_neg_Xhl     (branch_cond_neg_Xhl),
-    .proc2cop_data_Whl       (proc2cop_data_Whl)
+    .proc2cop_data_Whl       (proc2cop_data_Whl),
+
+    // Bypass Signals
+
+    .rs_W_byp_Dhl           (rs_W_byp_Dhl),
+    .rt_W_byp_Dhl           (rt_W_byp_Dhl)
   );
 
 endmodule

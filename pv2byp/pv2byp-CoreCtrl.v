@@ -1,5 +1,5 @@
 //=========================================================================
-// 5-Stage PARCv1 Control Unit
+// 5-Stage PARCv2 Control Unit
 //=========================================================================
 
 `ifndef PARC_CORE_CTRL_V
@@ -60,7 +60,11 @@ module parc_CoreCtrl
   input  [31:0]     proc2cop_data_Whl,
 
   // CP0 Status
-  output reg [31:0] cp0_status
+  output reg [31:0] cp0_status,
+
+  // Bypass Signals
+  output            rs_W_byp_Dhl,
+  output            rt_W_byp_Dhl
 );
 
   //----------------------------------------------------------------------
@@ -350,7 +354,7 @@ module parc_CoreCtrl
 
       `PARC_INST_MSG_ADDIU   :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_si,   n, alu_add,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rt, n   };
       `PARC_INST_MSG_ORI     :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_zi,   n, alu_or,   md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rt, n   };
-      `PARC_INST_MSG_LUI     :cs={ y,  n,    br_none, pm_p,   am_16,   y, bm_zi,   n, alu_sll,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rt, n   };
+      `PARC_INST_MSG_LUI     :cs={ y,  n,    br_none, pm_p,   am_16,   n, bm_zi,   n, alu_sll,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rt, n   };
 
       `PARC_INST_MSG_ADDU    :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, y, alu_add,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
 
@@ -358,13 +362,62 @@ module parc_CoreCtrl
       `PARC_INST_MSG_SW      :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_si,   y, alu_add,  md_x,    n, mdm_x, em_x,   st,  ml_w, dmm_w,  wm_mem, n,  rx, n   };
 
       `PARC_INST_MSG_JAL     :cs={ y,  y,    br_none, pm_j,   am_0,    n, bm_pc,   n, alu_add,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rL, n   };
-      `PARC_INST_MSG_JR      :cs={ y,  y,    br_none, pm_r,   am_rdat, y, bm_x,    n, alu_x,    md_x,    n, mdm_x, em_x,   nr,  ml_x, dmm_x,  wm_x,   n,  rx, n   };
+      `PARC_INST_MSG_JR      :cs={ y,  y,    br_none, pm_r,   am_x,    y, bm_x,    n, alu_x,    md_x,    n, mdm_x, em_x,   nr,  ml_x, dmm_x,  wm_x,   n,  rx, n   };
       `PARC_INST_MSG_BNE     :cs={ y,  n,    br_bne,  pm_b,   am_rdat, y, bm_rdat, y, alu_xor,  md_x,    n, mdm_x, em_x,   nr,  ml_x, dmm_x,  wm_x,   n,  rx, n   };
 
       `PARC_INST_MSG_MTC0    :cs={ y,  n,    br_none, pm_p,   am_0,    n, bm_rdat, y, alu_add,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, n,  rx, y   };
 
-    endcase
+      // added from lab report
+      `PARC_INST_MSG_LH      :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_si,   n, alu_add,  md_x,    n, mdm_x, em_x,   ld,  ml_h, dmm_h,  wm_mem, y,  rt, n   };
+      
+      // added register immediate instructions 
+      `PARC_INST_MSG_ANDI    :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_zi,   n, alu_and,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rt, n   };
+      `PARC_INST_MSG_XORI    :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_zi,   n, alu_xor,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rt, n   };
 
+      `PARC_INST_MSG_SLL     :cs={ y,  n,    br_none, pm_p,   am_sh,   y, bm_rdat, y, alu_sll,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
+      `PARC_INST_MSG_SRL     :cs={ y,  n,    br_none, pm_p,   am_sh,   y, bm_rdat, y, alu_srl,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
+      `PARC_INST_MSG_SRA     :cs={ y,  n,    br_none, pm_p,   am_sh,   y, bm_rdat, y, alu_sra,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
+
+      `PARC_INST_MSG_SLTI    :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_si,   n, alu_lt,   md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rt, n   };
+      `PARC_INST_MSG_SLTIU   :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_si,   n, alu_ltu,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rt, n   };
+
+      // added register register instructions
+      `PARC_INST_MSG_SRLV    :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, n, alu_srl,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
+      `PARC_INST_MSG_SLLV    :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, n, alu_sll,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
+      `PARC_INST_MSG_SRAV    :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, n, alu_sra,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
+      `PARC_INST_MSG_SLT     :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, y, alu_lt,   md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
+      `PARC_INST_MSG_SLTU    :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, y, alu_ltu,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
+      `PARC_INST_MSG_SUBU    :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, y, alu_sub,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
+      `PARC_INST_MSG_AND     :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, y, alu_and,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
+      `PARC_INST_MSG_NOR     :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, y, alu_nor,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
+      `PARC_INST_MSG_XOR     :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, y, alu_xor,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
+      `PARC_INST_MSG_OR      :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, y, alu_or,   md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
+      
+      // memory instruction
+      `PARC_INST_MSG_LB      :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_si,   n, alu_add,  md_x,    n, mdm_x, em_x,   ld,  ml_b, dmm_b,  wm_mem, y,  rt, n   };
+      `PARC_INST_MSG_LBU     :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_si,   n, alu_add,  md_x,    n, mdm_x, em_x,   ld,  ml_b, dmm_bu, wm_mem, y,  rt, n   };
+      `PARC_INST_MSG_LHU     :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_si,   n, alu_add,  md_x,    n, mdm_x, em_x,   ld,  ml_h, dmm_hu, wm_mem, y,  rt, n   };
+      `PARC_INST_MSG_SB      :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_si,   y, alu_add,  md_x,    n, mdm_x, em_x,   st,  ml_b, dmm_b,  wm_mem, n,  rx, n   };
+      `PARC_INST_MSG_SH      :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_si,   y, alu_add,  md_x,    n, mdm_x, em_x,   st,  ml_h, dmm_h,  wm_mem, n,  rx, n   };
+
+      // jump instructions
+      `PARC_INST_MSG_J       :cs={ y,  y,    br_none, pm_j,   am_x,    y, bm_x,    n, alu_x,    md_x,    n, mdm_x, em_x,   nr,  ml_x, dmm_x,  wm_x,   n,  rx, n   };
+      `PARC_INST_MSG_JALR    :cs={ y,  y,    br_none, pm_r,   am_0,    y, bm_pc,   y, alu_add,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
+
+      // branch instructions 
+      `PARC_INST_MSG_BEQ     :cs={ y,  n,    br_beq,  pm_b,   am_rdat, y, bm_rdat, y, alu_xor,  md_x,    n, mdm_x, em_x,   nr,  ml_x, dmm_x,  wm_x,   n,  rx, n   };
+      `PARC_INST_MSG_BLEZ    :cs={ y,  n,    br_blez, pm_b,   am_rdat, y, bm_0,    n, alu_sub,  md_x,    n, mdm_x, em_x,   nr,  ml_x, dmm_x,  wm_x,   n,  rx, n   };
+      `PARC_INST_MSG_BGTZ    :cs={ y,  n,    br_bgtz, pm_b,   am_rdat, y, bm_0,    n, alu_sub,  md_x,    n, mdm_x, em_x,   nr,  ml_x, dmm_x,  wm_x,   n,  rx, n   };
+      `PARC_INST_MSG_BLTZ    :cs={ y,  n,    br_bltz, pm_b,   am_rdat, y, bm_0,    n, alu_sub,  md_x,    n, mdm_x, em_x,   nr,  ml_x, dmm_x,  wm_x,   n,  rx, n   };
+      `PARC_INST_MSG_BGEZ    :cs={ y,  n,    br_bgez, pm_b,   am_rdat, y, bm_0,    n, alu_sub,  md_x,    n, mdm_x, em_x,   nr,  ml_x, dmm_x,  wm_x,   n,  rx, n   };
+
+      // mul div instructions
+      `PARC_INST_MSG_MUL     :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, y, alu_x,    md_mul,  y, mdm_l, em_md, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
+      `PARC_INST_MSG_DIV     :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, y, alu_x,    md_div,  y, mdm_l, em_md, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
+      `PARC_INST_MSG_DIVU    :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, y, alu_x,    md_divu, y, mdm_l, em_md, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
+      `PARC_INST_MSG_REM     :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, y, alu_x,    md_rem,  y, mdm_u, em_md, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
+      `PARC_INST_MSG_REMU    :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, y, alu_x,    md_remu, y, mdm_u, em_md, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
+    endcase
   end
 
   // Jump and Branch Controls
@@ -458,24 +511,36 @@ module parc_CoreCtrl
                          || ( rs_en_Dhl && inst_val_Mhl && rf_wen_Mhl
                               && ( rs_addr_Dhl == rf_waddr_Mhl )
                               && ( rf_waddr_Mhl != 5'd0 ) )
-                         || ( rs_en_Dhl && inst_val_Whl && rf_wen_Whl
-                              && ( rs_addr_Dhl == rf_waddr_Whl )
-                              && ( rf_waddr_Whl != 5'd0 ) )
+                        //  || ( rs_en_Dhl && inst_val_Whl && rf_wen_Whl
+                        //       && ( rs_addr_Dhl == rf_waddr_Whl )
+                        //       && ( rf_waddr_Whl != 5'd0 ) )
                          || ( rt_en_Dhl && inst_val_Xhl && rf_wen_Xhl
                               && ( rt_addr_Dhl == rf_waddr_Xhl )
                               && ( rf_waddr_Xhl != 5'd0 ) )
                          || ( rt_en_Dhl && inst_val_Mhl && rf_wen_Mhl
                               && ( rt_addr_Dhl == rf_waddr_Mhl )
-                              && ( rf_waddr_Mhl != 5'd0 ) )
-                         || ( rt_en_Dhl && inst_val_Whl && rf_wen_Whl
-                              && ( rt_addr_Dhl == rf_waddr_Whl )
-                              && ( rf_waddr_Whl != 5'd0 ) ) );
+                              && ( rf_waddr_Mhl != 5'd0 ) ) );
+                        //  || ( rt_en_Dhl && inst_val_Whl && rf_wen_Whl
+                        //       && ( rt_addr_Dhl == rf_waddr_Whl )
+                        //       && ( rf_waddr_Whl != 5'd0 ) ) );
 
   // Aggregate Stall Signal
 
   assign stall_Dhl = ( stall_Xhl
                   ||   stall_muldiv_Dhl
-                  ||   stall_hazard_Dhl );
+                  ||   stall_hazard_Dhl);
+                  
+
+  // Bypassing Logic
+
+  assign rs_W_byp_Dhl = inst_val_Dhl && ( rs_en_Dhl && inst_val_Whl && rf_wen_Whl
+                              && ( rs_addr_Dhl == rf_waddr_Whl )
+                              && ( rf_waddr_Whl != 5'd0 ) );
+
+  assign rt_W_byp_Dhl = inst_val_Dhl && ( rt_en_Dhl && inst_val_Whl && rf_wen_Whl
+                              && ( rt_addr_Dhl == rf_waddr_Whl )
+                              && ( rf_waddr_Whl != 5'd0 ) );
+  
 
   // Next bubble bit
 
@@ -558,13 +623,23 @@ module parc_CoreCtrl
   // Branch Conditions
 
   wire bne_resolve_Xhl  = ~branch_cond_eq_Xhl;
+  wire beq_resolve_Xhl  = branch_cond_eq_Xhl;
+  wire bltz_resolve_Xhl  = branch_cond_neg_Xhl;
+  wire blez_resolve_Xhl  = branch_cond_neg_Xhl || branch_cond_eq_Xhl;
+  wire bgez_resolve_Xhl  = ~ branch_cond_neg_Xhl || branch_cond_eq_Xhl;
+  wire bgtz_resolve_Xhl  = ~ branch_cond_neg_Xhl && ~ branch_cond_eq_Xhl;
 
   // Resolve Branch
 
   wire bne_taken_Xhl  = ( ( br_sel_Xhl == br_bne ) && bne_resolve_Xhl );
+  wire beq_taken_Xhl  = ( ( br_sel_Xhl == br_beq ) && beq_resolve_Xhl );
+  wire bltz_taken_Xhl  = ( ( br_sel_Xhl == br_bltz ) && bltz_resolve_Xhl );
+  wire blez_taken_Xhl  = ( ( br_sel_Xhl == br_blez ) && blez_resolve_Xhl );
+  wire bgez_taken_Xhl  = ( ( br_sel_Xhl == br_bgez ) && bgez_resolve_Xhl );
+  wire bgtz_taken_Xhl  = ( ( br_sel_Xhl == br_bgtz ) && bgtz_resolve_Xhl );
 
   wire any_br_taken_Xhl
-    = ( bne_taken_Xhl
+    = ( bne_taken_Xhl || beq_taken_Xhl || bltz_taken_Xhl || blez_taken_Xhl || bgez_taken_Xhl || bgtz_taken_Xhl
       );
 
   wire brj_taken_Xhl = ( inst_val_Xhl && any_br_taken_Xhl );

@@ -56,7 +56,12 @@ module parc_CoreDpath
   output        branch_cond_eq_Xhl,
   output        branch_cond_zero_Xhl,
   output        branch_cond_neg_Xhl,
-  output [31:0] proc2cop_data_Whl
+  output [31:0] proc2cop_data_Whl,
+
+  // Bypass signals
+
+  input         rs_W_byp_Dhl,
+  input         rt_W_byp_Dhl
 );
 
   //--------------------------------------------------------------------
@@ -190,7 +195,10 @@ module parc_CoreDpath
     : ( op0_mux_sel_Dhl == 2'd3 ) ? const0
     :                               32'bx;
 
+  wire [31:0] byp_or_op0_mux_out_Dhl = rs_W_byp_Dhl ? wb_mux_out_Whl : op0_mux_out_Dhl;
+
   // Operand 1 mux
+
 
   wire [31:0] op1_mux_out_Dhl
     = ( op1_mux_sel_Dhl == 3'd0 ) ? rf_rdata1_Dhl
@@ -200,9 +208,12 @@ module parc_CoreDpath
     : ( op1_mux_sel_Dhl == 3'd4 ) ? const0
     :                               32'bx;
 
+  wire [31:0] byp_or_op1_mux_out_Dhl = rt_W_byp_Dhl ? wb_mux_out_Whl : op1_mux_out_Dhl;
+
   // wdata with bypassing
 
   wire [31:0] wdata_Dhl = rf_rdata1_Dhl;
+  // wire [31:0] wdata_Dhl = rf_or_byp_data;
 
   //----------------------------------------------------------------------
   // X <- D
@@ -218,8 +229,8 @@ module parc_CoreDpath
     if( !stall_Xhl ) begin
       pc_Xhl          <= pc_Dhl;
       branch_targ_Xhl <= branch_targ_Dhl;
-      op0_mux_out_Xhl <= op0_mux_out_Dhl;
-      op1_mux_out_Xhl <= op1_mux_out_Dhl;
+      op0_mux_out_Xhl <= byp_or_op0_mux_out_Dhl;
+      op1_mux_out_Xhl <= byp_or_op1_mux_out_Dhl;
       wdata_Xhl       <= wdata_Dhl;
     end
   end
