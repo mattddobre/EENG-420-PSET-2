@@ -176,7 +176,7 @@ module parc_CoreDpath
 
   wire [31:0] jumpreg_targ_Dhl;
 
-  assign jumpreg_targ_Dhl  = rf_rdata0_Dhl;
+  assign jumpreg_targ_Dhl  = byp_or_rf_rdata0_Dhl;
 
   // Zero and sign extension immediate
 
