@@ -536,11 +536,27 @@ module parc_CoreCtrl
                         //       && ( rt_addr_Dhl == rf_waddr_Whl )
                         //       && ( rf_waddr_Whl != 5'd0 ) ) );
 
+  // Is load signals
+  reg is_load_Xhl;
+  reg is_load_Mhl;
+  reg is_load_Whl;
+
+  wire r_after_l_Xhl = ( rs_X_byp_Dhl || rt_X_byp_Dhl ) && is_load_Xhl;
+
+  wire r_after_l_Mhl = ( rs_M_byp_Dhl || rt_M_byp_Dhl ) && is_load_Mhl;
+
+  wire r_after_l_Whl = ( rs_W_byp_Dhl || rt_W_byp_Dhl ) && is_load_Whl;
+
+                      
+
   // Aggregate Stall Signal
 
   assign stall_Dhl = ( stall_Xhl
                   ||   stall_muldiv_Dhl
                   // ||   stall_hazard_Dhl
+                  ||   r_after_l_Xhl
+                  ||   r_after_l_Mhl
+                  ||   r_after_l_Whl
                   );
                   
 
@@ -570,6 +586,9 @@ module parc_CoreCtrl
                               && ( rt_addr_Dhl == rf_waddr_Whl )
                               && ( rf_waddr_Whl != 5'd0 ) );
   
+  // is load
+
+  wire is_load_Dhl = cs[`PARC_INST_MSG_MEM_REQ] == ld;
 
   // Next bubble bit
 
@@ -624,6 +643,10 @@ module parc_CoreCtrl
       rf_waddr_Xhl         <= rf_waddr_Dhl;
       cp0_wen_Xhl          <= cp0_wen_Dhl;
       cp0_addr_Xhl         <= cp0_addr_Dhl;
+
+      // is load
+
+      is_load_Xhl          <= is_load_Dhl;
 
       bubble_Xhl           <= bubble_next_Dhl;
     end
@@ -730,6 +753,9 @@ module parc_CoreCtrl
       cp0_wen_Mhl          <= cp0_wen_Xhl;
       cp0_addr_Mhl         <= cp0_addr_Xhl;
 
+      // is load
+      is_load_Mhl          <= is_load_Xhl;
+
       bubble_Mhl           <= bubble_next_Xhl;
     end
     dmemreq_val_Mhl <= dmemreq_val;
@@ -794,6 +820,9 @@ module parc_CoreCtrl
       rf_waddr_Whl     <= rf_waddr_Mhl;
       cp0_wen_Whl      <= cp0_wen_Mhl;
       cp0_addr_Whl     <= cp0_addr_Mhl;
+
+      // is load
+      is_load_Whl      <= is_load_Mhl;
 
       bubble_Whl       <= bubble_next_Mhl;
     end
