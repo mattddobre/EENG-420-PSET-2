@@ -82,8 +82,15 @@ module parc_Core
 
   // Bypass wires
 
+  wire        rs_X_byp_Dhl;
+  wire        rt_X_byp_Dhl;
+
+  wire        rs_M_byp_Dhl;
+  wire        rt_M_byp_Dhl;
+
   wire        rs_W_byp_Dhl;
   wire        rt_W_byp_Dhl;
+
 
   //----------------------------------------------------------------------
   // Pack Memory Request Messages
@@ -190,6 +197,12 @@ module parc_Core
 
     // Bypass Signals
 
+    .rs_X_byp_Dhl           (rs_X_byp_Dhl),
+    .rt_X_byp_Dhl           (rt_X_byp_Dhl),
+
+    .rs_M_byp_Dhl           (rs_M_byp_Dhl),
+    .rt_M_byp_Dhl           (rt_M_byp_Dhl),
+
     .rs_W_byp_Dhl           (rs_W_byp_Dhl),
     .rt_W_byp_Dhl           (rt_W_byp_Dhl)
   );
@@ -247,6 +260,12 @@ module parc_Core
     .proc2cop_data_Whl       (proc2cop_data_Whl),
 
     // Bypass Signals
+
+    .rs_X_byp_Dhl           (rs_X_byp_Dhl),
+    .rt_X_byp_Dhl           (rt_X_byp_Dhl),
+
+    .rs_M_byp_Dhl           (rs_M_byp_Dhl),
+    .rt_M_byp_Dhl           (rt_M_byp_Dhl),
 
     .rs_W_byp_Dhl           (rs_W_byp_Dhl),
     .rt_W_byp_Dhl           (rt_W_byp_Dhl)

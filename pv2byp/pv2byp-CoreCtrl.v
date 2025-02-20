@@ -63,6 +63,13 @@ module parc_CoreCtrl
   output reg [31:0] cp0_status,
 
   // Bypass Signals
+
+  output            rs_X_byp_Dhl,
+  output            rt_X_byp_Dhl,
+
+  output            rs_M_byp_Dhl,
+  output            rt_M_byp_Dhl,
+
   output            rs_W_byp_Dhl,
   output            rt_W_byp_Dhl
 );
@@ -382,9 +389,14 @@ module parc_CoreCtrl
       `PARC_INST_MSG_SLTIU   :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_si,   n, alu_ltu,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rt, n   };
 
       // added register register instructions
-      `PARC_INST_MSG_SRLV    :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, n, alu_srl,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
-      `PARC_INST_MSG_SLLV    :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, n, alu_sll,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
-      `PARC_INST_MSG_SRAV    :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, n, alu_sra,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
+      // `PARC_INST_MSG_SRLV    :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, n, alu_srl,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
+      `PARC_INST_MSG_SRLV    :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, y, alu_srl,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
+      
+      // `PARC_INST_MSG_SLLV    :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, n, alu_sll,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
+      `PARC_INST_MSG_SLLV    :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, y, alu_sll,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
+      
+      `PARC_INST_MSG_SRAV    :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, y, alu_sra,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
+      // `PARC_INST_MSG_SRAV    :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, n, alu_sra,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
       `PARC_INST_MSG_SLT     :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, y, alu_lt,   md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
       `PARC_INST_MSG_SLTU    :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, y, alu_ltu,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
       `PARC_INST_MSG_SUBU    :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, y, alu_sub,  md_x,    n, mdm_x, em_alu, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
@@ -504,22 +516,22 @@ module parc_CoreCtrl
   // Stall for data hazards if either of the operand read addresses are
   // the same as the write addresses of instruction later in the pipeline
 
-  wire stall_hazard_Dhl   = inst_val_Dhl && (
-                            ( rs_en_Dhl && inst_val_Xhl && rf_wen_Xhl
-                              && ( rs_addr_Dhl == rf_waddr_Xhl )
-                              && ( rf_waddr_Xhl != 5'd0 ) )
-                         || ( rs_en_Dhl && inst_val_Mhl && rf_wen_Mhl
-                              && ( rs_addr_Dhl == rf_waddr_Mhl )
-                              && ( rf_waddr_Mhl != 5'd0 ) )
+  // wire stall_hazard_Dhl   = inst_val_Dhl && (
+                        //     ( rs_en_Dhl && inst_val_Xhl && rf_wen_Xhl
+                        //       && ( rs_addr_Dhl == rf_waddr_Xhl )
+                        //       && ( rf_waddr_Xhl != 5'd0 ) )
+                        //  || ( rs_en_Dhl && inst_val_Mhl && rf_wen_Mhl
+                        //       && ( rs_addr_Dhl == rf_waddr_Mhl )
+                        //       && ( rf_waddr_Mhl != 5'd0 ) )
                         //  || ( rs_en_Dhl && inst_val_Whl && rf_wen_Whl
                         //       && ( rs_addr_Dhl == rf_waddr_Whl )
                         //       && ( rf_waddr_Whl != 5'd0 ) )
-                         || ( rt_en_Dhl && inst_val_Xhl && rf_wen_Xhl
-                              && ( rt_addr_Dhl == rf_waddr_Xhl )
-                              && ( rf_waddr_Xhl != 5'd0 ) )
-                         || ( rt_en_Dhl && inst_val_Mhl && rf_wen_Mhl
-                              && ( rt_addr_Dhl == rf_waddr_Mhl )
-                              && ( rf_waddr_Mhl != 5'd0 ) ) );
+                        //  || ( rt_en_Dhl && inst_val_Xhl && rf_wen_Xhl
+                        //       && ( rt_addr_Dhl == rf_waddr_Xhl )
+                        //       && ( rf_waddr_Xhl != 5'd0 ) )
+                        //  || ( rt_en_Dhl && inst_val_Mhl && rf_wen_Mhl
+                        //       && ( rt_addr_Dhl == rf_waddr_Mhl )
+                        //       && ( rf_waddr_Mhl != 5'd0 ) ) );
                         //  || ( rt_en_Dhl && inst_val_Whl && rf_wen_Whl
                         //       && ( rt_addr_Dhl == rf_waddr_Whl )
                         //       && ( rf_waddr_Whl != 5'd0 ) ) );
@@ -528,10 +540,27 @@ module parc_CoreCtrl
 
   assign stall_Dhl = ( stall_Xhl
                   ||   stall_muldiv_Dhl
-                  ||   stall_hazard_Dhl);
+                  // ||   stall_hazard_Dhl
+                  );
                   
 
   // Bypassing Logic
+
+  assign rs_X_byp_Dhl = inst_val_Dhl && ( rs_en_Dhl && inst_val_Xhl && rf_wen_Xhl
+                              && ( rs_addr_Dhl == rf_waddr_Xhl )
+                              && ( rf_waddr_Xhl != 5'd0 ) );
+
+  assign rt_X_byp_Dhl = inst_val_Dhl && ( rt_en_Dhl && inst_val_Xhl && rf_wen_Xhl
+                              && ( rt_addr_Dhl == rf_waddr_Xhl )
+                              && ( rf_waddr_Xhl != 5'd0 ) );
+
+  assign rs_M_byp_Dhl = inst_val_Dhl && ( rs_en_Dhl && inst_val_Mhl && rf_wen_Mhl
+                              && ( rs_addr_Dhl == rf_waddr_Mhl )
+                              && ( rf_waddr_Mhl != 5'd0 ) );
+
+  assign rt_M_byp_Dhl = inst_val_Dhl && ( rt_en_Dhl && inst_val_Mhl && rf_wen_Mhl
+                              && ( rt_addr_Dhl == rf_waddr_Mhl )
+                              && ( rf_waddr_Mhl != 5'd0 ) );
 
   assign rs_W_byp_Dhl = inst_val_Dhl && ( rs_en_Dhl && inst_val_Whl && rf_wen_Whl
                               && ( rs_addr_Dhl == rf_waddr_Whl )

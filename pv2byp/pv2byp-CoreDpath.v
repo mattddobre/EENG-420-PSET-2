@@ -60,6 +60,12 @@ module parc_CoreDpath
 
   // Bypass signals
 
+  input         rs_X_byp_Dhl,
+  input         rt_X_byp_Dhl,
+
+  input         rs_M_byp_Dhl,
+  input         rt_M_byp_Dhl,
+
   input         rs_W_byp_Dhl,
   input         rt_W_byp_Dhl
 );
@@ -188,27 +194,34 @@ module parc_CoreDpath
 
   // Operand 0 mux
 
+  wire [31:0] byp_or_rf_rdata0_Dhl 
+    = (rs_X_byp_Dhl) ? execute_mux_out_Xhl 
+    : (rs_M_byp_Dhl) ? wb_mux_out_Mhl 
+    : (rs_W_byp_Dhl) ? wb_mux_out_Whl 
+    :                 rf_rdata0_Dhl;
+
   wire [31:0] op0_mux_out_Dhl
-    = ( op0_mux_sel_Dhl == 2'd0 ) ? rf_rdata0_Dhl
+    = ( op0_mux_sel_Dhl == 2'd0 ) ? byp_or_rf_rdata0_Dhl
     : ( op0_mux_sel_Dhl == 2'd1 ) ? shamt_Dhl
     : ( op0_mux_sel_Dhl == 2'd2 ) ? const16
     : ( op0_mux_sel_Dhl == 2'd3 ) ? const0
     :                               32'bx;
 
-  wire [31:0] byp_or_op0_mux_out_Dhl = rs_W_byp_Dhl ? wb_mux_out_Whl : op0_mux_out_Dhl;
-
   // Operand 1 mux
 
+  wire [31:0] byp_or_rf_rdata1_Dhl 
+    = (rt_X_byp_Dhl) ? execute_mux_out_Xhl 
+    : (rt_M_byp_Dhl) ? wb_mux_out_Mhl 
+    : (rt_W_byp_Dhl) ? wb_mux_out_Whl 
+    :                 rf_rdata1_Dhl;
 
   wire [31:0] op1_mux_out_Dhl
-    = ( op1_mux_sel_Dhl == 3'd0 ) ? rf_rdata1_Dhl
+    = ( op1_mux_sel_Dhl == 3'd0 ) ? byp_or_rf_rdata1_Dhl
     : ( op1_mux_sel_Dhl == 3'd1 ) ? imm_zext_Dhl
     : ( op1_mux_sel_Dhl == 3'd2 ) ? imm_sext_Dhl
     : ( op1_mux_sel_Dhl == 3'd3 ) ? pc_plus4_Dhl
     : ( op1_mux_sel_Dhl == 3'd4 ) ? const0
     :                               32'bx;
-
-  wire [31:0] byp_or_op1_mux_out_Dhl = rt_W_byp_Dhl ? wb_mux_out_Whl : op1_mux_out_Dhl;
 
   // wdata with bypassing
 
@@ -229,8 +242,8 @@ module parc_CoreDpath
     if( !stall_Xhl ) begin
       pc_Xhl          <= pc_Dhl;
       branch_targ_Xhl <= branch_targ_Dhl;
-      op0_mux_out_Xhl <= byp_or_op0_mux_out_Dhl;
-      op1_mux_out_Xhl <= byp_or_op1_mux_out_Dhl;
+      op0_mux_out_Xhl <= op0_mux_out_Dhl;
+      op1_mux_out_Xhl <= op1_mux_out_Dhl;
       wdata_Xhl       <= wdata_Dhl;
     end
   end
