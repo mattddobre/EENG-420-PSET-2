@@ -429,6 +429,7 @@ module parc_CoreCtrl
       `PARC_INST_MSG_DIVU    :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, y, alu_x,    md_divu, y, mdm_l, em_md, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
       `PARC_INST_MSG_REM     :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, y, alu_x,    md_rem,  y, mdm_u, em_md, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
       `PARC_INST_MSG_REMU    :cs={ y,  n,    br_none, pm_p,   am_rdat, y, bm_rdat, y, alu_x,    md_remu, y, mdm_u, em_md, nr,  ml_x, dmm_x,  wm_alu, y,  rd, n   };
+
     endcase
   end
 

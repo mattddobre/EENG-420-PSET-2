@@ -225,7 +225,7 @@ module parc_CoreDpath
 
   // wdata with bypassing
 
-  wire [31:0] wdata_Dhl = rf_rdata1_Dhl;
+  wire [31:0] wdata_Dhl = byp_or_rf_rdata1_Dhl;
   // wire [31:0] wdata_Dhl = rf_or_byp_data;
 
   //----------------------------------------------------------------------
