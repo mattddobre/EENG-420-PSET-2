@@ -426,7 +426,7 @@ Copyright (C) 2021 Free Software Foundation, Inc.
 This config.status script is free software; the Free Software Foundation
 gives unlimited permission to copy, distribute and modify it."
 
-ac_pwd='/home/accts/bc772/cs420/EENG-420-PSET-2/ubmark/build'
+ac_pwd='/home/accts/bc772/cs420/cpsc420/cpsc420-lab2/ubmark/build'
 srcdir='..'
 INSTALL='/usr/bin/install -c'
 test -n "$AWK" || AWK=awk

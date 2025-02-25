@@ -36,7 +36,7 @@ def parse_cmdline():
   p.add_option( "-f", "--file",    action="store", type="string", dest="file" )
   (opts,args) = p.parse_args()
   if ( help == True ): p.error()
-  if args: p.error("found extra positional arguments")
+  if args: p.error(f"found extra positional arguments")
   return opts
 
 #-------------------------------------------------------------------------------

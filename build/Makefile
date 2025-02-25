@@ -96,6 +96,9 @@ tests = \
   parcv2-bgez.vmh \
   parcv2-beq.vmh \
 
+custom_tests = \
+  parcv2-byp.vmh \
+
 pv2stall_rtl_sim = pv2stall-sim
 pv2stall_rtl_rand_sim = pv2stall-randdelay-sim
 pv2byp_rtl_sim = pv2byp-sim
@@ -127,6 +130,12 @@ long_tests_rand_outs = $(patsubst %.vmh,%-long-rand.out,$(tests))
 $(long_tests_rand_outs) : %-long-rand.out : %.vmh $(pv2long_rtl_rand_sim)
 	./$(pv2long_rtl_rand_sim) +stats=1 +vcd=1 +exe=$< > $@
 
+# Custom Tests for last 2 stages of pipeline
+
+custom_tests_outs = $(patsubst %.vmh,%-long.out,$(custom_tests))
+$(custom_tests_outs) : %-long.out : %.vmh $(pv2long_rtl_sim)
+	./$(pv2long_rtl_sim) +stats=1 +vcd=1 +exe=$< > $@
+
 check-asm-pv2stall : $(stall_tests_outs)
 	@echo; \
   perl -ne 'print "  [$$1] $$ARGV \t$$2\n" if /\*{3}(.{8})\*{3}(.*)/' \
@@ -157,12 +166,21 @@ check-asm-rand-pv2long : $(long_tests_rand_outs)
   perl -ne 'print "  [$$1] $$ARGV \t$$2\n" if /\*{3}(.{8})\*{3}(.*)/' \
        $(long_tests_rand_outs); echo;
 
+# Custom Tests for last 2 stages of pipeline
+
+check-asm-cust-pv2long : $(custom_tests_outs)
+	@echo; \
+  perl -ne 'print "  [$$1] $$ARGV \t$$2\n" if /\*{3}(.{8})\*{3}(.*)/' \
+       $(custom_tests_outs); echo;
+
 junk += $(stall_tests_outs)
 junk += $(stall_tests_rand_outs)
 junk += $(byp_tests_outs)
 junk += $(byp_tests_rand_outs)
 junk += $(long_tests_outs)
 junk += $(long_tests_rand_outs)
+# Custom Tests for last 2 stages of pipeline
+junk += $(custom_tests_outs)
 
 #-------------------------------------------------------------------------
 # List of Benchmarks
@@ -173,6 +191,7 @@ bmarks = \
   ubmark-cmplx-mult.vmh \
   ubmark-masked-filter.vmh \
   ubmark-bin-search.vmh \
+  ubmark-fib.vmh \
 
 stall_bmarks_outs = $(patsubst %.vmh,%-stall.out,$(bmarks))
 $(stall_bmarks_outs) : %-stall.out : %.vmh $(pv2stall_rtl_sim)
