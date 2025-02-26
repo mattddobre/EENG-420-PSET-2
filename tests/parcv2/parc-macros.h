@@ -143,18 +143,18 @@ _xcpthandler:                                                           \
     inst_ $2, imm_;                                                     \
     TEST_CHECK_EQ( $2, result_ );                                       \
 
+#define TEST_LUI_DEST_BYP_OP0( nops_, inst_, imm_, result_ )            \
+    li    $2, 0;                                                        \
+    inst_ $2, imm_;                                                     \
+    TEST_INSERT_NOPS( nops_ );                                          \
+    TEST_CHECK_EQ( $2, result_ );                                       \
+
 #define TEST_LUI_DEST_BYP( nops_, inst_, imm_, result_ )                \
     li    $2, 0;                                                        \
     inst_ $2, imm_;                                                     \
     TEST_INSERT_NOPS( nops_ );                                          \
     addiu $3, $2, 0;                                                    \
     TEST_CHECK_EQ( $3, result_ );                                       \
-
-#define TEST_LUI_DEST_BYP_OP0( nops_, inst_, imm_, result_ )            \
-    li    $2, 0;                                                        \
-    inst_ $2, imm_;                                                     \
-    TEST_INSERT_NOPS( nops_ );                                          \
-    TEST_CHECK_EQ( $2, result_ );                                       \
 
 //------------------------------------------------------------------------
 // TEST_RR : Helper macros for register-register instructions
